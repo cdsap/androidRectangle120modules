@@ -13,6 +13,7 @@ import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 class CompositeBuildPluginAndroidApp : Plugin<Project> {
     override fun apply(target: Project) {
@@ -26,10 +27,10 @@ class CompositeBuildPluginAndroidApp : Plugin<Project> {
             }
 
             extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
-                namespace = "com.awesome." + target.name.replace(":","_").replace("-", "")
+                namespace = "com.awesome." + target.name.replace(":", "_").replace("-", "")
                 compileSdk = 36
                 defaultConfig {
-                    applicationId = "com.awesome." + target.name.replace(":","_").replace("-", "")
+                    applicationId = "com.awesome." + target.name.replace(":", "_").replace("-", "")
                     minSdk = 24
                     targetSdk = 36
                     versionCode = 1
@@ -39,7 +40,10 @@ class CompositeBuildPluginAndroidApp : Plugin<Project> {
                 buildTypes {
                     getByName("release") {
                         isMinifyEnabled = true
-                        proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+                        proguardFiles(
+                            getDefaultProguardFile("proguard-android-optimize.txt"),
+                            "proguard-rules.pro"
+                        )
                     }
                 }
                 buildFeatures {
@@ -47,22 +51,23 @@ class CompositeBuildPluginAndroidApp : Plugin<Project> {
                 }
             }
             target.extensions.getByType(KotlinAndroidProjectExtension::class.java).apply {
-                    jvmToolchain(23)
+                jvmToolchain(23)
             }
-            target.extensions.getByType(org.gradle.api.plugins.JavaPluginExtension::class.java).apply {
-                toolchain.languageVersion.set(org.gradle.jvm.toolchain.JavaLanguageVersion.of(23))
-            }
+            target.extensions.getByType(org.gradle.api.plugins.JavaPluginExtension::class.java)
+                .apply {
+                    toolchain.languageVersion.set(org.gradle.jvm.toolchain.JavaLanguageVersion.of(23))
+                }
             // Hilt missing Java Toolchain support https://github.com/google/dagger/issues/4623
             val toolchains = target.extensions.getByType(JavaToolchainService::class.java)
             target.tasks.withType(JavaCompile::class.java)
-                 .matching { it.name.startsWith("hiltJavaCompile") }
-                 .configureEach {
-                     javaCompiler.set(
-                         toolchains.compilerFor {
-                             languageVersion.set(JavaLanguageVersion.of(23))
-                         }
-                     )
-                 }
+                .matching { it.name.startsWith("hiltJavaCompile") }
+                .configureEach {
+                    javaCompiler.set(
+                        toolchains.compilerFor {
+                            languageVersion.set(JavaLanguageVersion.of(23))
+                        }
+                    )
+                }
 
             dependencies {
 
@@ -86,6 +91,10 @@ class CompositeBuildPluginAndroidApp : Plugin<Project> {
                         tasks.withType(R8Task::class.java).configureEach {
                             dependsOn(killTask)
                         }
+                        killTask.configure {
+                            mustRunAfter(tasks.withType(KotlinJvmCompile::class.java))
+                        }
+
                     }
                 }
                 project.afterEvaluate {
