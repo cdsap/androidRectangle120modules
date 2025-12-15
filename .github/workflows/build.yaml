@@ -42,4 +42,4 @@ jobs:
       - name: Check build-logic
         run: ./gradlew :app:app:assembleRelease
         env:
-           DEVELOCITY_ACCESS_KEY: ${{ secrets."DV_ACCESS_KEY" }}
+           DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_ACCESS_KEY }}
