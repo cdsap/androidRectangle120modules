@@ -72,37 +72,6 @@ class CompositeBuildPluginAndroidApp : Plugin<Project> {
             dependencies {
 
             }
-
-            val killTask = project.tasks.register(
-                "killKotlinCompileDaemon",
-                KillKotlinCompileDaemonTask::class.java
-            )
-            killTask.configure {
-                kotlinDaemonKillInfo.set(project.providers.of(KillKotlinCompileDaemonValueSource::class.java) {
-                    parameters.commands.set(KillKotlinCompileDaemonValueSource.DEFAULT_COMMAND)
-                })
-            }
-            with(project) {
-
-                val androidComponents =
-                    extensions.getByType(ApplicationAndroidComponentsExtension::class.java)
-                plugins.withType(AppPlugin::class.java) {
-                    androidComponents.onVariants { variant ->
-                        tasks.withType(R8Task::class.java).configureEach {
-                            dependsOn(killTask)
-                        }
-                        killTask.configure {
-                            mustRunAfter(tasks.withType(KotlinJvmCompile::class.java))
-                        }
-
-                    }
-                }
-                project.afterEvaluate {
-                    project.tasks.named("minifyReleaseWithR8") {
-                        dependsOn(killTask)
-                    }
-                }
-            }
         }
     }
 }
