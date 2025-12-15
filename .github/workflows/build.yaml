@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - kill_process_before_r8
   pull_request:
 
 concurrency:
@@ -33,13 +33,13 @@ jobs:
           distribution: 'zulu'
           java-version: 23
 
-      - name: Processs Watcher 
-        uses: cdsap/build-process-watcher@v0.4.0
+      - name: Processs Watcher
+        uses: cdsap/build-process-watcher@v0.4.1
         with:
             remote_monitoring: true
-            collect_gc: true      
+            collect_gc: true
 
       - name: Check build-logic
-        run: ./gradlew build
+        run: ./gradlew :app:app:assembleRelease
         env:
            DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_ACCESS_KEY }}

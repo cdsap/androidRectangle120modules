@@ -1,5 +1,8 @@
 package com.logic
 
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.android.build.gradle.AppPlugin
+import com.android.build.gradle.internal.tasks.R8Task
 import org.gradle.api.Plugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
@@ -35,7 +38,7 @@ class CompositeBuildPluginAndroidApp : Plugin<Project> {
                 }
                 buildTypes {
                     getByName("release") {
-                        isMinifyEnabled = false
+                        isMinifyEnabled = true
                         proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
                     }
                 }
@@ -63,6 +66,33 @@ class CompositeBuildPluginAndroidApp : Plugin<Project> {
 
             dependencies {
 
+            }
+
+            val killTask = project.tasks.register(
+                "killKotlinCompileDaemon",
+                KillKotlinCompileDaemonTask::class.java
+            )
+            killTask.configure {
+                kotlinDaemonKillInfo.set(project.providers.of(KillKotlinCompileDaemonValueSource::class.java) {
+                    parameters.commands.set(KillKotlinCompileDaemonValueSource.DEFAULT_COMMAND)
+                })
+            }
+            with(project) {
+
+                val androidComponents =
+                    extensions.getByType(ApplicationAndroidComponentsExtension::class.java)
+                plugins.withType(AppPlugin::class.java) {
+                    androidComponents.onVariants { variant ->
+                        tasks.withType(R8Task::class.java).configureEach {
+                            dependsOn(killTask)
+                        }
+                    }
+                }
+                project.afterEvaluate {
+                    project.tasks.named("minifyReleaseWithR8") {
+                        dependsOn(killTask)
+                    }
+                }
             }
         }
     }
