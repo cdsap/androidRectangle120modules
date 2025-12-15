@@ -34,7 +34,7 @@ jobs:
           java-version: 23
 
       - name: Processs Watcher
-        uses: cdsap/build-process-watcher@v0.4.1
+        uses: cdsap/build-process-watcher@main
         with:
             remote_monitoring: true
             collect_gc: true
@@ -42,4 +42,4 @@ jobs:
       - name: Check build-logic
         run: ./gradlew :app:app:assembleRelease
         env:
-           DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_ACCESS_KEY }}
+           DEVELOCITY_ACCESS_KEY: ${{ secrets."DV_ACCESS_KEY" }}
