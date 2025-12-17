@@ -1,8 +1,5 @@
 package com.logic
 
-import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import com.android.build.gradle.AppPlugin
-import com.android.build.gradle.internal.tasks.R8Task
 import org.gradle.api.Plugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
@@ -40,7 +37,6 @@ class CompositeBuildPluginAndroidApp : Plugin<Project> {
                 buildTypes {
                     getByName("release") {
                         isMinifyEnabled = true
-                        isShrinkResources = true
                         proguardFiles(
                             getDefaultProguardFile("proguard-android-optimize.txt"),
                             "proguard-rules.pro"
