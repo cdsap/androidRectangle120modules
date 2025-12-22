@@ -1,6 +1,6 @@
 plugins {
     id("awesome.androidapp.plugin")
-    id("io.github.cdsap.r8booster") version "0.0.4"
+    id("io.github.cdsap.r8booster") version "0.0.5"
 }
 
 dependencies {
